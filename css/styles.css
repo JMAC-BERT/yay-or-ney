@@ -1,0 +1,302 @@
+/*
+ * Global stylesheet for Yay or Ney
+ *
+ * A playful colour palette and rounded shapes bring a fun personality to
+ * the interface. The Fredoka One typeface gives the headings extra character.
+ */
+
+body {
+  /* Use a modern sans-serif for body copy while retaining a playful feel */
+  font-family: 'Poppins', 'Fredoka One', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #fafafa;
+  color: #343a40;
+  line-height: 1.5;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #ff8a65, #ff6b81); /* soft gradient */
+  padding: 1rem 1.5rem;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-family: 'Fredoka One', cursive;
+}
+
+header h1 a {
+  color: #fff;
+  text-decoration: none;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  gap: 1rem;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: opacity 0.2s ease-in-out;
+}
+
+nav a:hover {
+  opacity: 0.8;
+}
+
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #fff3e0; /* soft peach */
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.flash-messages {
+  background-color: #ffe6e6;
+  border: 2px dashed #ffb3b3;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  color: #c0392b;
+}
+
+.form-section,
+.list-section {
+  background-color: #ffffff;
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.form-section h2,
+.list-section h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  font-family: 'Fredoka One', cursive;
+  color: #ff6b81;
+}
+
+.wine-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.wine-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-size: 1rem;
+}
+
+.wine-form input[type="file"],
+.wine-form select,
+.wine-form input[type="text"],
+.wine-form input[type="number"] {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid #f7d794;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.radio-group .label {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.radio-label {
+  margin-left: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.yay {
+  color: #2ecc71; /* green */
+}
+
+.ney {
+  color: #e74c3c; /* red */
+}
+
+.submit-btn {
+  background-color: #4ecdc4; /* teal */
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:hover {
+  background-color: #3bb09c;
+  transform: translateY(-2px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.wine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.wine-card {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.1s ease-in-out;
+}
+
+.wine-card:hover {
+  transform: translateY(-3px);
+}
+
+.image-wrapper {
+  width: 100%;
+  height: 0;
+  padding-top: 100%;
+  position: relative;
+}
+
+.image-wrapper img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wine-details {
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: #555;
+  flex-grow: 1;
+}
+
+.wine-details h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-family: 'Fredoka One', cursive;
+  color: #ff6b81;
+}
+
+.wine-details p {
+  margin: 0.25rem 0;
+}
+
+/* Highlight the rating with modern colours */
+.yay-card {
+  border-top: 6px solid #34c759;
+}
+
+.ney-card {
+  border-top: 6px solid #ff3b30;
+}
+
+.empty-state {
+  font-style: italic;
+  color: #999;
+}
+
+/* Filters styling */
+.filter-section {
+  background-color: #f8f9fa;
+  border: 2px dashed #ffe8e8;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+}
+
+.filter-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-family: 'Fredoka One', cursive;
+  color: #ff6b81;
+  font-size: 1.4rem;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 2px solid #ececec;
+  border-radius: 8px;
+  background-color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.clear-btn {
+  margin-top: 1.25rem;
+  background-color: #6c5ce7; /* vibrant purple */
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clear-btn:hover {
+  background-color: #5942d8;
+  transform: translateY(-2px);
+}
+
+.clear-btn:active {
+  transform: translateY(0);
+}
