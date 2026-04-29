@@ -1,32 +1,107 @@
 /*
  * script.js — Yay or Ney wine tracking app
- * All data persisted in localStorage as base64-encoded image entries.
+ * Data synced across devices via Firebase Firestore.
+ * Access gated by shared password stored in localStorage.
  */
 
-const STORAGE_KEY = 'wine_entries';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+// ── Firebase ──────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: 'AIzaSyCCYNdG6F1Fwp-7oUK2Qlo5gvdRb04AsBY',
+  authDomain: 'yay-or-ney.firebaseapp.com',
+  projectId: 'yay-or-ney',
+  storageBucket: 'yay-or-ney.firebasestorage.app',
+  messagingSenderId: '486687003301',
+  appId: '1:486687003301:web:9ee9bdf63b5504901bb34c'
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── Password gate ─────────────────────────────────────────────
+const APP_PASSWORD = 'winetime';
+const AUTH_KEY     = 'wine_auth';
+
+function isAuthenticated() {
+  return localStorage.getItem(AUTH_KEY) === APP_PASSWORD;
+}
+
+function initPasswordGate() {
+  if (isAuthenticated()) { initApp(); return; }
+
+  const gate  = document.getElementById('passwordGate');
+  const form  = document.getElementById('passwordForm');
+  const input = document.getElementById('passwordInput');
+  const error = document.getElementById('passwordError');
+  if (gate) gate.style.display = 'flex';
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (input && input.value === APP_PASSWORD) {
+        localStorage.setItem(AUTH_KEY, APP_PASSWORD);
+        if (gate) gate.style.display = 'none';
+        initApp();
+      } else {
+        if (error) error.style.display = 'block';
+        if (input) input.value = '';
+      }
+    });
+  }
+}
+
+// ── In-memory store (kept in sync by onSnapshot) ──────────────
+let _entries = [];
 
 function loadEntries() {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    return [];
-  }
+  return _entries;
 }
 
-function saveEntries(entries) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch (e) {
-    console.error('Failed to save wine entries:', e);
-  }
+// ── Firestore helpers ─────────────────────────────────────────
+async function saveEntryToDb(entry) {
+  await setDoc(doc(db, 'wines', String(entry.id)), entry);
 }
 
+async function deleteEntryFromDb(id) {
+  await deleteDoc(doc(db, 'wines', String(id)));
+}
+
+function startSync() {
+  onSnapshot(collection(db, 'wines'), (snapshot) => {
+    _entries = snapshot.docs.map(d => d.data());
+    _entries.sort((a, b) => b.id - a.id);
+    if (document.getElementById('wineList')) {
+      updateStats();
+      applyFilters();
+    }
+  });
+}
+
+// ── Image compression ─────────────────────────────────────────
+function compressImage(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX_W = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = dataUrl;
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────────
 function colorEmoji(color) {
   return { Red: '🔴', White: '⚪', Rosé: '🌸', Sparkling: '✨', Other: '🍷' }[color] || '';
 }
 
-// ── Image preview ────────────────────────────────────────────
+// ── Image preview ─────────────────────────────────────────────
 function initImagePreview() {
   const imageInput = document.getElementById('image');
   if (!imageInput) return;
@@ -45,7 +120,7 @@ function initImagePreview() {
   });
 }
 
-// ── Form submit ──────────────────────────────────────────────
+// ── Form submit ───────────────────────────────────────────────
 function handleFormSubmit(event) {
   event.preventDefault();
 
@@ -75,18 +150,29 @@ function handleFormSubmit(event) {
   const notes    = notesInput    ? notesInput.value.trim()       : '';
   const date     = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  const submitBtn = document.querySelector('.submit-btn');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Saving…'; }
+
   const reader = new FileReader();
-  reader.onload = () => {
-    const entries = loadEntries();
-    entries.push({ id: Date.now(), imageData: reader.result, wineName, label, color, varietal, price, notes, date });
-    saveEntries(entries);
-    window.location.href = 'list.html';
+  reader.onload = async () => {
+    const imageData = await compressImage(reader.result);
+    const entry = { id: Date.now(), imageData, wineName, label, color, varietal, price, notes, date };
+    try {
+      await saveEntryToDb(entry);
+      window.location.href = 'list.html';
+    } catch (err) {
+      alert('Error saving wine. Please try again.');
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Save Wine 🍾'; }
+    }
   };
-  reader.onerror = () => alert('Error reading the photo. Please try again.');
+  reader.onerror = () => {
+    alert('Error reading the photo. Please try again.');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Save Wine 🍾'; }
+  };
   reader.readAsDataURL(file);
 }
 
-// ── Sort ─────────────────────────────────────────────────────
+// ── Sort ──────────────────────────────────────────────────────
 function sortEntries(entries, sortBy) {
   const s = [...entries];
   switch (sortBy) {
@@ -95,12 +181,12 @@ function sortEntries(entries, sortBy) {
     case 'price-desc': s.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0)); break;
     case 'yay-first':  s.sort((a) => (a.label === 'Yay' ? -1 : 1)); break;
     case 'ney-first':  s.sort((a) => (a.label === 'Ney' ? -1 : 1)); break;
-    default:           s.sort((a, b) => b.id - a.id); // newest
+    default:           s.sort((a, b) => b.id - a.id);
   }
   return s;
 }
 
-// ── Render wine list ─────────────────────────────────────────
+// ── Render wine list ──────────────────────────────────────────
 function renderWineList(entries) {
   const listContainer = document.getElementById('wineList');
   const emptyState    = document.getElementById('emptyState');
@@ -153,7 +239,7 @@ function renderWineList(entries) {
   });
 }
 
-// ── Stats ────────────────────────────────────────────────────
+// ── Stats ─────────────────────────────────────────────────────
 function updateStats() {
   const entries = loadEntries();
   const yays    = entries.filter(e => e.label === 'Yay').length;
@@ -165,7 +251,7 @@ function updateStats() {
   if (neyEl)   neyEl.textContent   = entries.length - yays;
 }
 
-// ── Apply filters + sort ─────────────────────────────────────
+// ── Apply filters + sort ──────────────────────────────────────
 function applyFilters() {
   const ratingSelect  = document.getElementById('filterRating');
   const colourSelect  = document.getElementById('filterColor');
@@ -194,12 +280,12 @@ function applyFilters() {
   renderWineList(sortEntries(entries, sortBy));
 }
 
-// ── Card actions (edit + delete) ─────────────────────────────
+// ── Card actions (edit + delete) ──────────────────────────────
 function initCardActions() {
   const listContainer = document.getElementById('wineList');
   if (!listContainer) return;
 
-  listContainer.addEventListener('click', (e) => {
+  listContainer.addEventListener('click', async (e) => {
     const editBtn = e.target.closest('.edit-btn');
     if (editBtn) {
       openEditModal(parseInt(editBtn.dataset.id, 10));
@@ -209,9 +295,7 @@ function initCardActions() {
     if (deleteBtn) {
       const id = parseInt(deleteBtn.dataset.id, 10);
       if (!confirm('Remove this wine from your list?')) return;
-      saveEntries(loadEntries().filter(entry => entry.id !== id));
-      applyFilters();
-      updateStats();
+      await deleteEntryFromDb(id);
     }
   });
 }
@@ -254,7 +338,7 @@ function closeEditModal() {
   if (editImage) editImage.value = '';
 }
 
-function handleEditSubmit(event) {
+async function handleEditSubmit(event) {
   event.preventDefault();
 
   const id        = parseInt(document.getElementById('editId').value, 10);
@@ -269,26 +353,26 @@ function handleEditSubmit(event) {
 
   if (!label) { alert('Please select Yay or Ney.'); return; }
 
-  const entries = loadEntries();
-  const idx     = entries.findIndex(e => e.id === id);
-  if (idx === -1) return;
+  const existing = loadEntries().find(e => e.id === id);
+  if (!existing) return;
 
-  const applyUpdate = (imageData) => {
-    entries[idx] = { ...entries[idx], wineName, label, color, varietal, price, notes, imageData };
-    saveEntries(entries);
+  const applyUpdate = async (imageData) => {
+    const updated = { ...existing, wineName, label, color, varietal, price, notes, imageData };
+    await saveEntryToDb(updated);
     closeEditModal();
-    applyFilters();
-    updateStats();
   };
 
   const fileInput = document.getElementById('editImage');
   if (fileInput && fileInput.files && fileInput.files.length > 0) {
     const reader = new FileReader();
-    reader.onload  = (e) => applyUpdate(e.target.result);
+    reader.onload  = async (e) => {
+      const compressed = await compressImage(e.target.result);
+      applyUpdate(compressed);
+    };
     reader.onerror = () => alert('Error reading the photo. Please try again.');
     reader.readAsDataURL(fileInput.files[0]);
   } else {
-    applyUpdate(entries[idx].imageData);
+    applyUpdate(existing.imageData);
   }
 }
 
@@ -322,7 +406,7 @@ function initEditModal() {
   }
 }
 
-// ── Filter section toggle ────────────────────────────────────
+// ── Filter section toggle ─────────────────────────────────────
 function initFilterToggle() {
   const btn     = document.getElementById('filterToggle');
   const section = document.getElementById('filterSection');
@@ -339,7 +423,7 @@ function initFilterToggle() {
   });
 }
 
-// ── Bottom nav active state ──────────────────────────────────
+// ── Bottom nav active state ───────────────────────────────────
 function initBottomNav() {
   const page = window.location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.bottom-nav-item').forEach(link => {
@@ -347,9 +431,9 @@ function initBottomNav() {
   });
 }
 
-// ── Init ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  initBottomNav();
+// ── App init (called after authentication) ────────────────────
+function initApp() {
+  startSync();
 
   const form = document.getElementById('wineForm');
   if (form) {
@@ -358,8 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (document.getElementById('wineList')) {
-    updateStats();
-    renderWineList();
     initCardActions();
     initEditModal();
     initFilterToggle();
@@ -382,9 +464,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const sortEl = document.getElementById('sortBy');
         if (sortEl) sortEl.value = 'newest';
-        renderWineList(sortEntries(loadEntries(), 'newest'));
-        updateStats();
       });
     }
   }
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initBottomNav();
+  initPasswordGate();
 });

@@ -202,6 +202,20 @@
       </a>
     </nav>
 
-    <script src="js/script.js"></script>
+    <!-- Password gate overlay -->
+    <div id="passwordGate" class="password-gate" style="display:none;">
+      <div class="gate-card">
+        <div class="gate-logo">🍷</div>
+        <h2 class="gate-title">Yay or Ney</h2>
+        <p class="gate-sub">Enter the password to access your wine list.</p>
+        <form id="passwordForm" class="gate-form">
+          <input type="password" id="passwordInput" class="gate-input" placeholder="Password" autocomplete="off" />
+          <p id="passwordError" class="gate-error" style="display:none;">Incorrect password — try again.</p>
+          <button type="submit" class="gate-btn">Enter 🍾</button>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="js/script.js"></script>
   </body>
 </html>
