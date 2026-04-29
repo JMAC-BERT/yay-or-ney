@@ -138,7 +138,10 @@ function renderWineList(entries) {
       <div class="wine-body">
         <div class="wine-header">
           <h3 class="wine-name">${wineName}</h3>
-          <button class="delete-btn" data-id="${entry.id}" title="Remove" aria-label="Remove ${wineName}">🗑</button>
+          <div class="card-actions">
+            <button class="edit-btn"   data-id="${entry.id}" title="Edit"   aria-label="Edit ${wineName}">✏️</button>
+            <button class="delete-btn" data-id="${entry.id}" title="Remove" aria-label="Remove ${wineName}">🗑</button>
+          </div>
         </div>
         ${metaHTML}
         ${priceHTML}
@@ -191,20 +194,132 @@ function applyFilters() {
   renderWineList(sortEntries(entries, sortBy));
 }
 
-// ── Delete entry ─────────────────────────────────────────────
-function initDeleteListener() {
+// ── Card actions (edit + delete) ─────────────────────────────
+function initCardActions() {
   const listContainer = document.getElementById('wineList');
   if (!listContainer) return;
 
   listContainer.addEventListener('click', (e) => {
-    const btn = e.target.closest('.delete-btn');
-    if (!btn) return;
-    const id = parseInt(btn.dataset.id, 10);
-    if (!confirm('Remove this wine from your list?')) return;
-    saveEntries(loadEntries().filter(entry => entry.id !== id));
+    const editBtn = e.target.closest('.edit-btn');
+    if (editBtn) {
+      openEditModal(parseInt(editBtn.dataset.id, 10));
+      return;
+    }
+    const deleteBtn = e.target.closest('.delete-btn');
+    if (deleteBtn) {
+      const id = parseInt(deleteBtn.dataset.id, 10);
+      if (!confirm('Remove this wine from your list?')) return;
+      saveEntries(loadEntries().filter(entry => entry.id !== id));
+      applyFilters();
+      updateStats();
+    }
+  });
+}
+
+// ── Edit modal ────────────────────────────────────────────────
+function openEditModal(id) {
+  const entry = loadEntries().find(e => e.id === id);
+  if (!entry) return;
+
+  document.getElementById('editId').value        = entry.id;
+  document.getElementById('editWineName').value  = entry.wineName || '';
+  document.getElementById('editColor').value     = entry.color    || '';
+  document.getElementById('editVarietal').value  = entry.varietal || '';
+  document.getElementById('editPrice').value     = entry.price    || '';
+  document.getElementById('editNotes').value     = entry.notes    || '';
+
+  document.getElementById('editRatingYay').checked = entry.label === 'Yay';
+  document.getElementById('editRatingNey').checked = entry.label === 'Ney';
+
+  const zone = document.getElementById('editFileDropZone');
+  const img  = document.getElementById('editPreviewImg');
+  if (entry.imageData && zone && img) {
+    img.src = entry.imageData;
+    zone.classList.add('has-image');
+  }
+
+  const modal = document.getElementById('editModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+
+  const zone       = document.getElementById('editFileDropZone');
+  const editImage  = document.getElementById('editImage');
+  if (zone)      zone.classList.remove('has-image');
+  if (editImage) editImage.value = '';
+}
+
+function handleEditSubmit(event) {
+  event.preventDefault();
+
+  const id        = parseInt(document.getElementById('editId').value, 10);
+  const labelEl   = document.querySelector('input[name="editLabel"]:checked');
+  const wineName  = document.getElementById('editWineName').value.trim();
+  const color     = document.getElementById('editColor').value;
+  const varietal  = document.getElementById('editVarietal').value.trim();
+  const priceEl   = document.getElementById('editPrice');
+  const price     = priceEl && priceEl.value !== '' ? parseFloat(priceEl.value).toFixed(2) : null;
+  const notes     = document.getElementById('editNotes').value.trim();
+  const label     = labelEl ? labelEl.value : null;
+
+  if (!label) { alert('Please select Yay or Ney.'); return; }
+
+  const entries = loadEntries();
+  const idx     = entries.findIndex(e => e.id === id);
+  if (idx === -1) return;
+
+  const applyUpdate = (imageData) => {
+    entries[idx] = { ...entries[idx], wineName, label, color, varietal, price, notes, imageData };
+    saveEntries(entries);
+    closeEditModal();
     applyFilters();
     updateStats();
+  };
+
+  const fileInput = document.getElementById('editImage');
+  if (fileInput && fileInput.files && fileInput.files.length > 0) {
+    const reader = new FileReader();
+    reader.onload  = (e) => applyUpdate(e.target.result);
+    reader.onerror = () => alert('Error reading the photo. Please try again.');
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    applyUpdate(entries[idx].imageData);
+  }
+}
+
+function initEditModal() {
+  const modal    = document.getElementById('editModal');
+  const closeBtn = document.getElementById('modalClose');
+  const editForm = document.getElementById('editForm');
+  if (!modal) return;
+
+  if (closeBtn) closeBtn.addEventListener('click', closeEditModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeEditModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display !== 'none') closeEditModal();
   });
+  if (editForm) editForm.addEventListener('submit', handleEditSubmit);
+
+  const editImageInput = document.getElementById('editImage');
+  if (editImageInput) {
+    editImageInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img  = document.getElementById('editPreviewImg');
+        const zone = document.getElementById('editFileDropZone');
+        if (img)  img.src = e.target.result;
+        if (zone) zone.classList.add('has-image');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 }
 
 // ── Filter section toggle ────────────────────────────────────
@@ -245,7 +360,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('wineList')) {
     updateStats();
     renderWineList();
-    initDeleteListener();
+    initCardActions();
+    initEditModal();
     initFilterToggle();
 
     const filterControls = ['filterRating', 'filterColor', 'filterVarietal', 'filterMinPrice', 'filterMaxPrice', 'sortBy'];

@@ -113,6 +113,83 @@
       <p>Made with ❤️ for wine lovers.</p>
     </footer>
 
+    <!-- Edit modal (bottom sheet) -->
+    <div id="editModal" class="modal-overlay" aria-modal="true" role="dialog" style="display:none;">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title">Edit Wine</h3>
+          <button class="modal-close-btn" id="modalClose" aria-label="Close">✕</button>
+        </div>
+        <form id="editForm" class="wine-form">
+          <input type="hidden" id="editId" />
+
+          <div class="form-group">
+            <label>Wine Label Photo <span class="optional">(tap to replace)</span></label>
+            <div class="file-drop-zone" id="editFileDropZone">
+              <div class="file-placeholder">
+                <span class="drop-icon">📷</span>
+                <span class="drop-text">Tap to replace photo</span>
+                <span class="drop-hint">JPG · PNG · HEIC</span>
+              </div>
+              <div class="file-preview-wrap" id="editFilePreviewWrap">
+                <img id="editPreviewImg" src="" alt="Label preview" />
+                <div class="change-photo-overlay">Tap to change photo</div>
+              </div>
+              <input type="file" id="editImage" name="editImage" accept="image/*" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editWineName">Wine Name / Winery</label>
+            <input type="text" id="editWineName" placeholder="e.g. Penfolds Bin 389" required />
+          </div>
+
+          <div class="form-group">
+            <label>Your Verdict</label>
+            <div class="rating-toggle">
+              <label class="rating-option">
+                <input type="radio" id="editRatingYay" name="editLabel" value="Yay" required />
+                <span class="rating-pill yay-pill">👍 Yay</span>
+              </label>
+              <label class="rating-option">
+                <input type="radio" id="editRatingNey" name="editLabel" value="Ney" />
+                <span class="rating-pill ney-pill">👎 Ney</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editColor">Colour</label>
+            <select id="editColor" required>
+              <option value="" disabled>Choose colour…</option>
+              <option value="Red">🔴 Red</option>
+              <option value="White">⚪ White</option>
+              <option value="Rosé">🌸 Rosé</option>
+              <option value="Sparkling">✨ Sparkling</option>
+              <option value="Other">🍷 Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="editVarietal">Varietal</label>
+            <input type="text" id="editVarietal" placeholder="e.g. Shiraz, Chardonnay" required />
+          </div>
+
+          <div class="form-group">
+            <label for="editPrice">Price <span class="optional">(AU$, optional)</span></label>
+            <input type="number" id="editPrice" min="0" step="0.01" placeholder="e.g. 25.00" />
+          </div>
+
+          <div class="form-group">
+            <label for="editNotes">Quick Notes <span class="optional">(optional)</span></label>
+            <textarea id="editNotes" rows="2" placeholder="e.g. Smooth finish, great with steak…"></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">Save Changes ✓</button>
+        </form>
+      </div>
+    </div>
+
     <!-- Mobile bottom navigation -->
     <nav class="bottom-nav" aria-label="App navigation">
       <a href="index.html" class="bottom-nav-item" data-page="index.html">
