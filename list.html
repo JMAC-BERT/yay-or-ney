@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yay or Ney • Your Wines</title>
-    <!-- Google Fonts: playful heading and modern body -->
+    <meta name="theme-color" content="#8B1A4A" />
+    <title>Yay or Ney • My Wines</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Pacifico&family=Poppins:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/styles.css" />
@@ -14,20 +14,40 @@
   <body>
     <header>
       <h1><a href="index.html">🍷 Yay or Ney</a></h1>
-      <nav>
-        <ul>
-          <li><a href="index.html">Add Wine</a></li>
-          <li><a href="list.html">View Wines</a></li>
-        </ul>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link">Add Wine</a>
+        <a href="list.html" class="nav-link active-link">My Wines</a>
       </nav>
     </header>
+
     <main>
       <section class="list-section">
-        <h2>Your Wines</h2>
+        <h2>My Wines</h2>
 
-        <!-- Filters: allow users to narrow down their saved wines by rating, colour, varietal and price range -->
-        <div class="filter-section">
-          <h3>Filter Wines</h3>
+        <!-- Stats bar -->
+        <div class="stats-bar" id="statsBar">
+          <div class="stat-chip total-chip">
+            <span class="stat-num" id="totalCount">0</span>
+            <span class="stat-lbl">wines</span>
+          </div>
+          <div class="stat-chip yay-chip">
+            <span class="stat-num" id="yayCount">0</span>
+            <span class="stat-lbl">Yays 👍</span>
+          </div>
+          <div class="stat-chip ney-chip">
+            <span class="stat-num" id="neyCount">0</span>
+            <span class="stat-lbl">Neys 👎</span>
+          </div>
+        </div>
+
+        <!-- Filter toggle button -->
+        <button class="filter-toggle-btn" id="filterToggle" type="button">
+          <span>Filter &amp; Sort</span>
+          <span class="toggle-chevron">▾</span>
+        </button>
+
+        <!-- Collapsible filter + sort section -->
+        <div class="filter-section" id="filterSection">
           <div class="filter-grid">
             <div class="filter-group">
               <label for="filterRating">Rating</label>
@@ -54,29 +74,57 @@
             </div>
             <div class="filter-group">
               <label for="filterMinPrice">Min Price (AU$)</label>
-              <input type="number" id="filterMinPrice" min="0" step="0.01" />
+              <input type="number" id="filterMinPrice" min="0" step="0.01" placeholder="0" />
             </div>
             <div class="filter-group">
               <label for="filterMaxPrice">Max Price (AU$)</label>
-              <input type="number" id="filterMaxPrice" min="0" step="0.01" />
+              <input type="number" id="filterMaxPrice" min="0" step="0.01" placeholder="Any" />
+            </div>
+            <div class="filter-group">
+              <label for="sortBy">Sort by</label>
+              <select id="sortBy">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="price-asc">Price ↑</option>
+                <option value="price-desc">Price ↓</option>
+                <option value="yay-first">Yays first</option>
+                <option value="ney-first">Neys first</option>
+              </select>
             </div>
           </div>
           <button type="button" id="clearFilters" class="clear-btn">Clear Filters</button>
         </div>
 
+        <!-- Empty state -->
         <div id="emptyState" class="empty-state" style="display: none;">
-          No wines saved yet. Head back to the add wine page and start logging
-          your favourites!
+          <span class="empty-icon">🍾</span>
+          <p class="empty-heading">No wines logged yet!</p>
+          <p class="empty-sub">
+            Head to <a href="index.html">Add Wine</a> and start your collection.
+          </p>
         </div>
+
+        <!-- Wine grid -->
         <div id="wineList" class="wine-grid"></div>
       </section>
     </main>
+
     <footer>
-      <p>
-        Made with ❤️ for wine lovers. Keep track of your favourites and avoid
-        the bad ones!
-      </p>
+      <p>Made with ❤️ for wine lovers.</p>
     </footer>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="bottom-nav" aria-label="App navigation">
+      <a href="index.html" class="bottom-nav-item" data-page="index.html">
+        <span class="bnav-icon">➕</span>
+        <span class="bnav-label">Add Wine</span>
+      </a>
+      <a href="list.html" class="bottom-nav-item" data-page="list.html">
+        <span class="bnav-icon">🍷</span>
+        <span class="bnav-label">My Wines</span>
+      </a>
+    </nav>
+
     <script src="js/script.js"></script>
   </body>
 </html>

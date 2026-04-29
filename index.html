@@ -3,66 +3,86 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yay or Ney • Wine Tasting Log</title>
-    <!-- Google Fonts: playful heading and modern body -->
+    <meta name="theme-color" content="#8B1A4A" />
+    <title>Yay or Ney • Add Wine</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Pacifico&family=Poppins:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
-    <!-- Custom styles -->
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
     <header>
       <h1><a href="index.html">🍷 Yay or Ney</a></h1>
-      <nav>
-        <ul>
-          <li><a href="index.html">Add Wine</a></li>
-          <li><a href="list.html">View Wines</a></li>
-        </ul>
+      <nav class="header-nav">
+        <a href="index.html" class="nav-link active-link">Add Wine</a>
+        <a href="list.html" class="nav-link">My Wines</a>
       </nav>
     </header>
+
     <main>
       <section class="form-section">
-        <h2>Add a New Wine</h2>
+        <h2>Add a Wine</h2>
         <form id="wineForm" class="wine-form">
+
+          <!-- Photo upload with live preview -->
           <div class="form-group">
-            <label for="image">Wine Label Photo</label>
+            <label>Wine Label Photo</label>
+            <div class="file-drop-zone" id="fileDropZone">
+              <div class="file-placeholder">
+                <span class="drop-icon">📷</span>
+                <span class="drop-text">Tap to add label photo</span>
+                <span class="drop-hint">JPG · PNG · HEIC</span>
+              </div>
+              <div class="file-preview-wrap" id="filePreviewWrap">
+                <img id="previewImg" src="" alt="Label preview" />
+                <div class="change-photo-overlay">Tap to change photo</div>
+              </div>
+              <input type="file" id="image" name="image" accept="image/*" required />
+            </div>
+          </div>
+
+          <!-- Wine name -->
+          <div class="form-group">
+            <label for="wineName">Wine Name / Winery</label>
             <input
-              type="file"
-              id="image"
-              name="image"
-              accept="image/*"
+              type="text"
+              id="wineName"
+              name="wineName"
+              placeholder="e.g. Penfolds Bin 389"
               required
             />
           </div>
-          <div class="form-group radio-group">
-            <span class="label">Rating</span>
-            <label>
-              <input
-                type="radio"
-                name="label"
-                value="Yay"
-                required
-              />
-              <span class="radio-label yay">Yay</span>
-            </label>
-            <label>
-              <input type="radio" name="label" value="Ney" />
-              <span class="radio-label ney">Ney</span>
-            </label>
+
+          <!-- Yay / Ney rating as pill toggle -->
+          <div class="form-group">
+            <label>Your Verdict</label>
+            <div class="rating-toggle">
+              <label class="rating-option">
+                <input type="radio" id="ratingYay" name="label" value="Yay" required />
+                <span class="rating-pill yay-pill">👍 Yay</span>
+              </label>
+              <label class="rating-option">
+                <input type="radio" id="ratingNey" name="label" value="Ney" />
+                <span class="rating-pill ney-pill">👎 Ney</span>
+              </label>
+            </div>
           </div>
+
+          <!-- Colour -->
           <div class="form-group">
             <label for="color">Colour</label>
             <select id="color" name="color" required>
-              <option value="" disabled selected>Choose colour</option>
-              <option value="Red">Red</option>
-              <option value="White">White</option>
-              <option value="Rosé">Rosé</option>
-              <option value="Sparkling">Sparkling</option>
-              <option value="Other">Other</option>
+              <option value="" disabled selected>Choose colour…</option>
+              <option value="Red">🔴 Red</option>
+              <option value="White">⚪ White</option>
+              <option value="Rosé">🌸 Rosé</option>
+              <option value="Sparkling">✨ Sparkling</option>
+              <option value="Other">🍷 Other</option>
             </select>
           </div>
+
+          <!-- Varietal -->
           <div class="form-group">
             <label for="varietal">Varietal</label>
             <input
@@ -73,8 +93,10 @@
               required
             />
           </div>
+
+          <!-- Price -->
           <div class="form-group">
-            <label for="price">Price (AU$)</label>
+            <label for="price">Price <span class="optional">(AU$, optional)</span></label>
             <input
               type="number"
               id="price"
@@ -84,16 +106,39 @@
               placeholder="e.g. 25.00"
             />
           </div>
-          <button type="submit" class="submit-btn">Save Wine</button>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label for="notes">Quick Notes <span class="optional">(optional)</span></label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="2"
+              placeholder="e.g. Smooth finish, great with steak…"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">Save Wine 🍾</button>
         </form>
       </section>
     </main>
+
     <footer>
-      <p>
-        Made with ❤️ for wine lovers. Keep track of your favourites and avoid
-        the bad ones!
-      </p>
+      <p>Made with ❤️ for wine lovers.</p>
     </footer>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="bottom-nav" aria-label="App navigation">
+      <a href="index.html" class="bottom-nav-item" data-page="index.html">
+        <span class="bnav-icon">➕</span>
+        <span class="bnav-label">Add Wine</span>
+      </a>
+      <a href="list.html" class="bottom-nav-item" data-page="list.html">
+        <span class="bnav-icon">🍷</span>
+        <span class="bnav-label">My Wines</span>
+      </a>
+    </nav>
+
     <script src="js/script.js"></script>
   </body>
 </html>
